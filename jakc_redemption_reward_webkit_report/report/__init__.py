@@ -1,0 +1,1 @@
+import redemption_reward_trans

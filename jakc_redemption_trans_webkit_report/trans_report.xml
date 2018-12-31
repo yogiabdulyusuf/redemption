@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+  <data>          
+    <report id="rdm_trans_list_report_webkit"
+            name="rdm.trans.list.report.webkit"
+            auto="False"
+            model="rdm.trans"
+            file="jakc_redemption_trans_webkit_report/report/redemption_trans_list.mako"
+            string="Transaction List"
+            webkit_header="base_headers_webkit.base_reports_portrait_header"
+            report_type="webkit"/>
+            
+    <report id="rdm_trans_detail_report_webkit"
+            name="rdm.trans.detail.report.webkit"
+            auto="False"
+            model="rdm.trans"
+            file="jakc_redemption_trans_webkit_report/report/redemption_trans_detail.mako"
+            string="Transaction Detail"
+            webkit_header="base_headers_webkit.base_reports_portrait_header"
+            report_type="webkit"/>                                  
+                                              
+  </data>
+</openerp>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+  <data>          
+    <report id="rdm_reward_trans_list_report_webkit"
+            name="rdm.reward.trans.list.report.webkit"
+            auto="False"
+            model="rdm.reward.trans"
+            file="jakc_redemption_trans_webkit_report/report/redemption_reward_trans_list.mako"
+            string="Reward Transaction List"
+            webkit_header="base_headers_webkit.base_reports_portrait_header"
+            report_type="webkit"/>                                  
+  </data>
+</openerp>

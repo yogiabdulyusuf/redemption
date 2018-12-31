@@ -1,0 +1,5 @@
+<openerp>
+    <data>        
+        <menuitem id="rdm_promo_menu" name="Promo Schemas" parent="base.rdm_promo_menu" groups="base.group_rdm_manager" action="action_rdm_promo_schemas" sequence="2"/>             
+    </data>
+</openerp>
