@@ -1,7 +1,7 @@
-from openerp.osv import fields, osv
-from datetime import datetime
-from datetime import timedelta
-from datetime import date
+from odoo import api, fields, models
+from datetime import datetime, timedelta, date
+from odoo.exceptions import ValidationError, Warning
+import logging
 import re
 import logging
 import string
@@ -26,18 +26,18 @@ CONTACT_TYPES = [
 ]
 
 
-class rdm_customer_change_password(osv.osv_memory):
+class rdm_customer_change_password(models.Model):
     _name = "rdm.customer.change.password"
     _description = "Redemption Customer Change Password" 
         
-    def change_password(self, cr, uid, ids, context=None):                
+    def change_password(self):                
         params = self.browse(cr, uid, ids, context=context)
         param = params[0]           
         customer_id = context.get('customer_id',False)
         data = {}              
         if param.password_new == param.password_confirm:
             data.update({'password':param.password_new})
-            self.pool.get('rdm.customer').write(cr, uid, [customer_id], data, context=context)                                                
+            self.env('rdm.customer').write(cr, uid, [customer_id], data, context=context)                                                
         return True
     
     _columns = {
@@ -47,7 +47,7 @@ class rdm_customer_change_password(osv.osv_memory):
        
 rdm_customer_change_password()
 
-class rdm_customer(osv.osv):
+class rdm_customer(models.Model):
     _name = 'rdm.customer'
     _description = 'Redemption Customer'
     
@@ -74,7 +74,7 @@ class rdm_customer(osv.osv):
     def get_trans(self, cr, uid, trans_id , context=None):
         return self.browse(cr, uid, trans_id, context=context);
     
-    def change_password(self, cr, uid, ids, context=None):
+    def change_password(self):
         return {
                'type': 'ir.actions.act_window',
                'name': 'Change Password',
@@ -86,7 +86,7 @@ class rdm_customer(osv.osv):
                'context': {'customer_id': ids[0]},
         } 
     
-    def _request_forget_password(self, cr, uid, ids, context=None):
+    def _request_forget_password(self):
         _logger.info('Start Request Forget Password Process')
         values = {}
         values.update({'request_change_password': True})
@@ -96,10 +96,10 @@ class rdm_customer(osv.osv):
             self._send_request_reset_password_notification(cr, uid, ids, context=context)
         _logger.info('End Request Forget Password Process')
         
-    def _forget_password(self, cr, uid, ids, context=None):
+    def _forget_password(self):
         _logger.info('Start Forget Password Process')
-        rdm_config = self.pool.get('rdm.config').get_config(cr, uid, context=context)
-        rdm_customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)    
+        rdm_config = self.env('rdm.config').get_config(cr, uid, context=context)
+        rdm_customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)    
         trans_id = ids[0]
         trans = self.get_trans(cr, uid, trans_id, context)        
         
@@ -119,10 +119,10 @@ class rdm_customer(osv.osv):
             _logger.info('Send Change Password Email Notification')        
         _logger.info('End Forget Password Process')
         
-    def re_registration(self, cr, uid, ids, context=None):
+    def re_registration(self):
         _logger.info('Start Re-registration Process')
-        rdm_config = self.pool.get('rdm.config').get_config(cr, uid, context=context)
-        rdm_customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)        
+        rdm_config = self.env('rdm.config').get_config(cr, uid, context=context)
+        rdm_customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)        
 
         trans_id = ids[0]
         trans = self.get_trans(cr, uid, trans_id, context=context)
@@ -153,16 +153,16 @@ class rdm_customer(osv.osv):
                     
         _logger.info('End Re-registration Process')
         
-    def _close_re_registration(self, cr, uid, ids, context=None):
+    def _close_re_registration(self):
         _logger.info("Start Close Re-registration")                
         values = {}
         values.update({'re_registration':True})
         super(rdm_customer,self).write(cr, uid, ids, values, context=context)
         _logger.info("End Close Re-registration")    
         
-    def reset_password(self, cr, uid, ids, context=None):
-        rdm_config = self.pool.get('rdm.config').get_config(cr, uid, context=context)
-        rdm_customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)    
+    def reset_password(self):
+        rdm_config = self.env('rdm.config').get_config(cr, uid, context=context)
+        rdm_customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)    
         trans_id = ids[0]
         trans = self.get_trans(cr, uid, trans_id, context)        
         if not rdm_config.enable_email:
@@ -181,9 +181,9 @@ class rdm_customer(osv.osv):
         chars= string.ascii_uppercase + string.digits
         return ''.join(random.choice(chars) for _ in range(size))
                 
-    def _add_new_member_point(self, cr, uid, ids, context=None):
+    def _add_new_member_point(self):
         _logger.info("Start Add New Member Point")                
-        rdm_customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)                
+        rdm_customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)                
         trans_id = ids[0]
         trans = self.get_trans(cr, uid, trans_id, context)            
         new_member_point = rdm_customer_config.new_member_point
@@ -193,12 +193,12 @@ class rdm_customer(osv.osv):
         point_data.update({'point':new_member_point})
         expired_date = datetime.today()+timedelta(rdm_customer_config.new_member_expired_duration)
         point_data.update({'expired_date': expired_date.strftime('%Y-%m-%d')})
-        self.pool.get('rdm.customer.point').create(cr, uid, point_data, context=context)
+        self.env('rdm.customer.point').create(cr, uid, point_data, context=context)
         _logger.info("End Add New Member Point")
     
-    def _add_re_registration_point(self, cr, uid, ids, context=None):
+    def _add_re_registration_point(self):
         _logger.info("Start Add Re-registration Point")
-        rdm_customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)                
+        rdm_customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)                
         trans_id = ids[0]
         trans = self.get_trans(cr, uid, trans_id, context)            
         re_registration_point = rdm_customer_config.re_registration_point
@@ -208,14 +208,14 @@ class rdm_customer(osv.osv):
         point_data.update({'point':re_registration_point})
         expired_date = datetime.today()+timedelta(rdm_customer_config.re_registration_expired_duration)
         point_data.update({'expired_date': expired_date.strftime('%Y-%m-%d')})
-        self.pool.get('rdm.customer.point').create(cr, uid, point_data, context=context)                    
+        self.env('rdm.customer.point').create(cr, uid, point_data, context=context)                    
         _logger.info("End Add Re-registration Point")
                 
-    def _add_referal_point(self, cr, uid, ids, context=None):        
+    def _add_referal_point(self):        
         _logger.info("Start Add Referal Point")
         trans_id = ids[0]
         trans = self.get_trans(cr, uid, trans_id, context)        
-        rdm_customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)            
+        rdm_customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)            
         referal_point = rdm_customer_config.referal_point
         point_data = {}
         point_data.update({'customer_id': trans.id})            
@@ -223,14 +223,14 @@ class rdm_customer(osv.osv):
         point_data.update({'point':referal_point})
         expired_date = datetime.today()+timedelta(rdm_customer_config.expired_duration)
         point_data.update({'expired_date': expired_date.strftime('%Y-%m-%d')})
-        self.pool.get('rdm.customer.point').create(cr, uid, point_data, context=context)
+        self.env('rdm.customer.point').create(cr, uid, point_data, context=context)
         _logger.info("End Add Referal Point")
     
     
-    def _new_member_process(self, cr, uid, ids, context=None):
+    def _new_member_process(self):
         _logger.info("Start New Member Process : " + str(ids[0]))
-        rdm_config = self.pool.get('rdm.config').get_config(cr, uid, context=context)
-        customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)
+        rdm_config = self.env('rdm.config').get_config(cr, uid, context=context)
+        customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)
         if customer_config.enable_new_member:            
             trans_id = ids[0]
             trans = self.get_trans(cr, uid, trans_id, context)
@@ -240,7 +240,7 @@ class rdm_customer(osv.osv):
             #Send Email
             if trans.email_required and trans.receive_email and rdm_config.enable_email:                        
                 _logger.info('Send Email New Member')
-                email_obj = self.pool.get('email.template')        
+                email_obj = self.env('email.template')        
                 template_ids = customer_config.new_member_email_tmpl
                 email = email_obj.browse(cr, uid, template_ids)  
                 email_obj.write(cr, uid, template_ids, {'email_from': email.email_from,
@@ -251,10 +251,10 @@ class rdm_customer(osv.osv):
                 email_obj.send_mail(cr, uid, template_ids, ids[0], True, context=context)                                                            
         _logger.info("End New Member Process")
         
-    def _referal_process(self, cr, uid, ids, context=None):
+    def _referal_process(self):
         _logger.info("Start Referal Process : " + str(ids[0]))
-        rdm_config = self.pool.get('rdm.config').get_config(cr, uid, context=context)
-        customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)
+        rdm_config = self.env('rdm.config').get_config(cr, uid, context=context)
+        customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)
         if customer_config.enable_referal:
             trans_id = ids[0]
             trans = self.get_trans(cr, uid, trans_id, context)
@@ -265,7 +265,7 @@ class rdm_customer(osv.osv):
                 #Send Email
                 if trans.ref_id.email_required and trans.ref_id.receive_email and rdm_config.enable_email:                    
                     _logger.info('Send Email Referal')
-                    email_obj = self.pool.get('email.template')        
+                    email_obj = self.env('email.template')        
                     template_ids = customer_config.referal_email_tmpl
                     email = email_obj.browse(cr, uid, template_ids)  
                     email_obj.write(cr, uid, template_ids, {'email_from': email.email_from,
@@ -280,7 +280,7 @@ class rdm_customer(osv.osv):
             
     def _check_duplicate(self, cr, uid, values, context=None):      
         _logger.info('Start Check Duplicate')
-        customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)        
+        customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)        
         #Check Email Address
         if customer_config.duplicate_email:
             if values.get('email_required'):
@@ -332,7 +332,7 @@ class rdm_customer(osv.osv):
         
     def _send_email_notification(self, cr, uid, values, context=None):
         _logger.info('Start Send Email Notification')
-        mail_mail = self.pool.get('mail.mail')
+        mail_mail = self.env('mail.mail')
         mail_ids = []
         mail_ids.append(mail_mail.create(cr, uid, {
             'email_from': values['email_from'],
@@ -344,21 +344,21 @@ class rdm_customer(osv.osv):
         _logger.info('End Send Email Notification')          
             
     
-    def send_create_email_notification(self, cr, uid, ids, context=None):
+    def send_create_email_notification(self):
         trans_id = ids[0]
         trans = self.get_trans(cr, uid, trans_id, context=context)
-        rdm_config = self.pool.get('rdm.config').get_config(cr, uid, context=context)                
+        rdm_config = self.env('rdm.config').get_config(cr, uid, context=context)                
         if rdm_config and rdm_config.enable_email and trans.receive_email:
-            rdm_customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)
+            rdm_customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)
             if rdm_customer_config.enable_new_member:
                 self.send_mail_to_new_customer(cr, uid, ids, context)
             if rdm_customer_config.enable_referal:
                 self.send_mail_to_referal_customer(cr, uid, ids, context)
     
-    def _send_re_registration_email_notification(self, cr, uid, ids, context=None):
+    def _send_re_registration_email_notification(self):
         _logger.info('Start Send Re-registraton Email Notification')
-        rdm_customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)         
-        email_obj = self.pool.get('email.template')        
+        rdm_customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)         
+        email_obj = self.env('email.template')        
         template_ids = rdm_customer_config.re_registration_email_tmpl
         email = email_obj.browse(cr, uid, template_ids)  
         email_obj.write(cr, uid, template_ids, {'email_from': email.email_from,
@@ -369,10 +369,10 @@ class rdm_customer(osv.osv):
         email_obj.send_mail(cr, uid, template_ids, ids[0], True, context=context)           
         _logger.info('End Send Re-registraton Email Notification')
         
-    def _send_request_reset_password_notification(self, cr, uid, ids, context=None):
+    def _send_request_reset_password_notification(self):
         _logger.info('Start Send Request Reset Password Notification')
-        rdm_customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)
-        email_obj = self.pool.get('email.template')        
+        rdm_customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)
+        email_obj = self.env('email.template')        
         template_ids = rdm_customer_config.request_reset_password_email_tmpl
         email = email_obj.browse(cr, uid, template_ids)  
         email_obj.write(cr, uid, template_ids, {'email_from': email.email_from,
@@ -384,10 +384,10 @@ class rdm_customer(osv.osv):
         
         _logger.info('End Send Request Reset Password Notification')
         
-    def _send_reset_password_notification(self, cr, uid, ids, context=None):
+    def _send_reset_password_notification(self):
         _logger.info('Start Send Reset Password Notification')
-        rdm_customer_config = self.pool.get('rdm.customer.config').get_config(cr, uid, context=context)
-        email_obj = self.pool.get('email.template')        
+        rdm_customer_config = self.env('rdm.customer.config').get_config(cr, uid, context=context)
+        email_obj = self.env('email.template')        
         template_ids = rdm_customer_config.reset_password_email_tmpl
         email = email_obj.browse(cr, uid, template_ids)  
         email_obj.write(cr, uid, template_ids, {'email_from': email.email_from,
