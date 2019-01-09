@@ -1,4 +1,5 @@
-<openerp>
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
     <data>
         <!-- RDM/CUSTOMER COUPON-->		
         <record model="ir.ui.view" id="view_rdm_customer_coupon_form">
@@ -115,4 +116,4 @@
         <menuitem id="rdm_customer_coupon_detail_menu" name="Coupon Detail" parent="base.rdm_promo_menu" groups="base.group_rdm_manager" action="action_rdm_customer_coupon_detail" sequence="2"/>             
           
     </data>
-</openerp>
+</odoo>

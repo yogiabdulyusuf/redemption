@@ -1,5 +1,5 @@
-<openerp>
+<odoo>
     <data>
         <menuitem id="rdm_customer_menu" name="Customer" parent="base.rdm_master_menu"  action="action_rdm_customer" sequence="1"/>
     </data>
-</openerp>
+</odoo>

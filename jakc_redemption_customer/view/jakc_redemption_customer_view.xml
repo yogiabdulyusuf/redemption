@@ -1,4 +1,4 @@
-<openerp>
+<odoo>
     <data>
         <!-- RDM/CUSTOMER-->		
         <record model="ir.ui.view" id="view_rdm_customer_form">
@@ -6,7 +6,7 @@
             <field name="model">rdm.customer</field>						
             <field name="type">form</field>						
             <field name="arch" type="xml">
-                <form string="Customer" version="7.0">
+                <form string="Customer">
 					<header>                        
                         <button name="set_black_list" string="Black List" type="object" class="oe_highlight" states='active'/>
                         <button name="set_remove_black_list" string="Undo Black List" type="object" class="oe_highlight" states='blacklist'/>                        
@@ -110,12 +110,12 @@
             </field>
         </record>  		
               
-		<!-- CHANGE PASSWORD POPUP WINDOW -->        
+		<!-- CHANGE PASSWORD POPUP WINDOW
         <record model="ir.ui.view" id="view_rdm_customer_change_password_form">
             <field name="name">rdm.customer.change.password.fom</field>
-            <field name="model">rdm.customer.change.password</field>						            					
+            <field name="model">rdm.customer.change.password</field>
             <field name="arch" type="xml">
-                <form string="Redemption Customer Change Password" version="7.0">  
+                <form string="Redemption Customer Change Password">
                     <group>                                                                            
                         <field name="password_new"/>
                         <field name="password_confirm"/>   
@@ -128,7 +128,7 @@
                 </form>
             </field>
         </record>	          
-                      
+         -->
         <!-- RDM/ACTION -->
         <!-- CUSTOMER -->
         <record model="ir.ui.view" id="view_rdm_customer_filter">
@@ -185,4 +185,4 @@
 
 
     </data>
-</openerp>
+</odoo>

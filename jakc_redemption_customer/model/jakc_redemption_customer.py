@@ -6,7 +6,6 @@ import re
 import logging
 import string
 import random
-import jakc_redemption_customer_config
 import uuid
 
 _logger = logging.getLogger(__name__)
@@ -26,24 +25,23 @@ CONTACT_TYPES = [
 ]
 
 
-class rdm_customer_change_password(models.Model):
-    _name = "rdm.customer.change.password"
-    _description = "Redemption Customer Change Password" 
-        
-    def change_password(self):
+# class rdm_customer_change_password(models.Model):
+#     _name = "rdm.customer.change.password"
+#     _description = "Redemption Customer Change Password"
+#
+#     def change_password(self):
+#
+#         customer_id = self.customer_id
+#         data = {}
+#         if self.password_new == self.password_confirm:
+#             data.update({"password":self.password_new})
+#             self.env("rdm.customer").write( [customer_id], data)
+#         return True
+#
+#
+#     password_new = fields.Char("New Password", ),
+#     password_confirm = fields.Text("Confirm Password", )
 
-        customer_id = self.customer_id
-        data = {}              
-        if self.password_new == self.password_confirm:
-            data.update({"password":self.password_new})
-            self.env("rdm.customer").write( [customer_id], data)                                                
-        return True
-    
-    
-    password_new = fields.Char("New Password", size=50),
-    password_confirm = fields.Text("Confirm Password", size=50)
-       
-rdm_customer_change_password()
 
 class rdm_customer(models.Model):
     _name = "rdm.customer"
@@ -51,31 +49,31 @@ class rdm_customer(models.Model):
 
     @api.one
     def set_black_list(self):
-        _logger.info("Blacklist ID : " + str(id))    
+        _logger.info("Blacklist ID : " + str(self.id))
         self.write({"state": "blacklist"})
         return True
 
     @api.one
     def set_remove_black_list(self):
-        _logger.info("Reset Blacklist ID : " + str(id))    
+        _logger.info("Reset Blacklist ID : " + str(self.id))
         self.write({"state": "active"})              
         return True
 
     @api.one
     def set_disable(self):
-        _logger.info("Activate ID : " + str(id))    
+        _logger.info("Activate ID : " + str(self.id))
         self.write({"state": "disable"})              
         return True
 
     @api.one
     def set_enable(self):
-        _logger.info("Reset activate ID : " + str(id))    
+        _logger.info("Reset activate ID : " + str(self.id))
         self.write({"state": "active"})              
         return True
 
     @api.one
     def get_trans(self):
-        return self.browse( trans_id);
+        return self.browse(self.trans_id);
 
     @api.one
     def change_password(self):
@@ -87,7 +85,7 @@ class rdm_customer(models.Model):
                "res_model": "rdm.customer.change.password",
                "nodestroy": True,
                "target":"new",
-               "context": {"customer_id": ids[0]},
+               "context": {"customer_id": self.id},
         }
 
     @api.one
@@ -96,9 +94,9 @@ class rdm_customer(models.Model):
         values = {}
         values.update({"request_change_password": True})
         values.update({"request_change_password_passcode": str(uuid.uuid1()).replace("-","")})
-        result = super(rdm_customer, self).write( ids, values)
+        result = super(rdm_customer, self).write( values)
         if result:
-            self._send_request_reset_password_notification( ids)
+            self._send_request_reset_password_notification()
         _logger.info("End Request Forget Password Process")
 
     @api.one
@@ -106,22 +104,22 @@ class rdm_customer(models.Model):
         _logger.info("Start Forget Password Process")
         rdm_config = self.env("rdm.config")
         rdm_customer_config = self.env("rdm.customer.config")    
-        trans_id = ids[0]
+        trans_id = self.id
         trans = self.get_trans( trans_id)        
         
         if not rdm_config.enable_email:
-            raise osv.except_osv(("Warning"), ("Customer cannot Receive Email"))
+            raise ValidationError(("Warning"), ("Customer cannot Receive Email"))
         
         if not trans.receive_email:
-            raise osv.except_osv(("Warning"), ("Customer cannot Receive Email"))                          
+            raise ValidationError(("Warning"), ("Customer cannot Receive Email"))                          
         
-        new_password = self._password_generator( context)
+        new_password = self._password_generator()
         customer_data = {}
         customer_data.update({"password":new_password})
         customer_data.update({"request_change_password":False})
         result = self.write(customer_data)
         if result:
-            self._send_reset_password_notification( ids)
+            self._send_reset_password_notification()
             _logger.info("Send Change Password Email Notification")        
         _logger.info("End Forget Password Process")
 
@@ -131,21 +129,21 @@ class rdm_customer(models.Model):
         rdm_config = self.env("rdm.config")
         rdm_customer_config = self.env("rdm.customer.config")        
 
-        trans_id = ids[0]
+        trans_id = self.id
         trans = self.get_trans( trans_id)
         
         #Re-registration Validation
         if not rdm_customer_config.enable_re_registration:
-            raise osv.except_osv(("Warning"), ("Customer Re-registration not enable"))
+            raise ValidationError(("Warning"), ("Customer Re-registration not enable"))
         if trans.re_registration:
-            raise osv.except_osv(("Warning"), ("Customer already re-registration"))  
+            raise ValidationError(("Warning"), ("Customer already re-registration"))  
         if not trans.email_required:
-            raise osv.except_osv(("Warning"), ("Customer Email Required"))
+            raise ValidationError(("Warning"), ("Customer Email Required"))
         if not trans.receive_email:
-            raise osv.except_osv(("Warning"), ("Customer cannot Receive Email"))  
+            raise ValidationError(("Warning"), ("Customer cannot Receive Email"))  
         
         #Generate Password    
-        new_password = self._password_generator( context)
+        new_password = self._password_generator()
         customer_data = {}
         customer_data.update({"password":new_password})
         self.write(customer_data)
@@ -156,7 +154,7 @@ class rdm_customer(models.Model):
     
         if rdm_config.enable_email:
             #Send Re-registration Email Notification
-            self._send_re_registration_email_notification( ids)
+            self._send_re_registration_email_notification()
                     
         _logger.info("End Re-registration Process")
 
@@ -165,24 +163,24 @@ class rdm_customer(models.Model):
         _logger.info("Start Close Re-registration")                
         values = {}
         values.update({"re_registration":True})
-        super(rdm_customer,self).write( ids, values)
+        super(rdm_customer,self).write( values)
         _logger.info("End Close Re-registration")
 
     @api.one
     def reset_password(self):
         rdm_config = self.env("rdm.config")
         rdm_customer_config = self.env("rdm.customer.config")    
-        trans_id = ids[0]
+        trans_id = self.id
         trans = self.get_trans( trans_id)        
         if not rdm_config.enable_email:
-            raise osv.except_osv(("Warning"), ("Customer cannot Receive Email"))
+            raise ValidationError(("Warning"), ("Customer cannot Receive Email"))
         if not trans.receive_email:
-            raise osv.except_osv(("Warning"), ("Customer cannot Receive Email"))                          
-        new_password = self._password_generator( context)
+            raise ValidationError(("Warning"), ("Customer cannot Receive Email"))                          
+        new_password = self._password_generator()
         customer_data = {}
         customer_data.update({"password":new_password})
-        self.write( ids, customer_data)
-        self._send_reset_password_notification( ids)
+        self.write(customer_data)
+        self._send_reset_password_notification()
         _logger.info("Send Change Password Email Notification")
 
     @api.one
@@ -195,7 +193,7 @@ class rdm_customer(models.Model):
     def _add_new_member_point(self):
         _logger.info("Start Add New Member Point")                
         rdm_customer_config = self.env("rdm.customer.config")                
-        trans_id = ids[0]
+        trans_id = self.id
         trans = self.get_trans( trans_id)            
         new_member_point = rdm_customer_config.new_member_point
         point_data = {}
@@ -211,7 +209,7 @@ class rdm_customer(models.Model):
     def _add_re_registration_point(self):
         _logger.info("Start Add Re-registration Point")
         rdm_customer_config = self.env("rdm.customer.config")                
-        trans_id = ids[0]
+        trans_id = self.id
         trans = self.get_trans( trans_id)            
         re_registration_point = rdm_customer_config.re_registration_point
         point_data = {}
@@ -226,7 +224,7 @@ class rdm_customer(models.Model):
     @api.one
     def _add_referal_point(self):        
         _logger.info("Start Add Referal Point")
-        trans_id = ids[0]
+        trans_id = self.id
         trans = self.get_trans( trans_id)        
         rdm_customer_config = self.env("rdm.customer.config")            
         referal_point = rdm_customer_config.referal_point
@@ -241,11 +239,11 @@ class rdm_customer(models.Model):
 
     @api.one
     def _new_member_process(self):
-        _logger.info("Start New Member Process : " + str(ids[0]))
+        _logger.info("Start New Member Process : " + str(self.id))
         rdm_config = self.env("rdm.config")
         customer_config = self.env("rdm.customer.config")
         if customer_config.enable_new_member:            
-            trans_id = ids[0]
+            trans_id = self.id
             trans = self.get_trans( trans_id)
             if trans.email_required and trans.receive_email:                
                 self._add_new_member_point()
@@ -261,12 +259,12 @@ class rdm_customer(models.Model):
                                                     "subject": email.subject,
                                                     "body_html": email.body_html,
                                                     "email_recipients": email.email_recipients})
-                email_obj.send_mail( template_ids, ids[0], True)                                                            
+                email_obj.send_mail( template_ids, self.id, True)
         _logger.info("End New Member Process")
 
     @api.one
     def _referal_process(self):
-        _logger.info("Start Referal Process : " + str(ids[0]))
+        _logger.info("Start Referal Process : " + str(self.id))
         rdm_config = self.env("rdm.config")
         customer_config = self.env("rdm.customer.config")
         if customer_config.enable_referal:
@@ -299,7 +297,7 @@ class rdm_customer(models.Model):
         if customer_config.duplicate_email:
             if self.email_required:
 
-                if "customer_id" in values.keys():
+                if "customer_id" in self.keys():
                     #Update Transaction
                     customer_ids = self.search( [("email","=",self.email),("id","!=",self.customer_id)])
                 else:
@@ -332,20 +330,20 @@ class rdm_customer(models.Model):
 
     @api.one
     def onchange_email_required(self):
-        if not email_required:            
+        if not self.email_required:            
             return {"value":{"email_required":""}}
 
     @api.one
     def onchange_mobil_phone1_number(self):
-        if not mobile_phone1:
+        if not self.mobile_phone1:
             return {"value":{}}            
-        return {"value":{"mobile_phone1":mobile_phone1}}
+        return {"value":{"mobile_phone1": self.mobile_phone1}}
 
     @api.one
     def onchange_mobile_phone2_number(self):
-        if not mobile_phone2:
+        if not self.mobile_phone2:
             return {"value":{}}                
-        return {"value":{"mobile_phone2":mobile_phone2}}
+        return {"value":{"mobile_phone2": self.mobile_phone2}}
 
     @api.one
     def _send_email_notification(self):
@@ -353,17 +351,17 @@ class rdm_customer(models.Model):
         mail_mail = self.env("mail.mail")
         mail_ids = []
         mail_ids.append(mail_mail.create( {
-            "email_from": values["email_from"],
-            "email_to": values["email_to"],
-            "subject": values["subject"],
-            "body_html": values["body_html"],
+            "email_from": self.email_from,
+            "email_to": self.email_to,
+            "subject": self.subject,
+            "body_html": self.body_html,
             }))
         mail_mail.send( mail_ids)
         _logger.info("End Send Email Notification")
 
     @api.one
     def send_create_email_notification(self):
-        trans_id = ids[0]
+        trans_id = self.id
         trans = self.get_trans( trans_id)
         rdm_config = self.env("rdm.config")                
         if rdm_config and rdm_config.enable_email and trans.receive_email:
@@ -385,7 +383,7 @@ class rdm_customer(models.Model):
                                                 "subject": email.subject,
                                                 "body_html": email.body_html,
                                                 "email_recipients": email.email_recipients})
-        email_obj.send_mail( template_ids, ids[0], True)           
+        email_obj.send_mail( template_ids, self.id, True)
         _logger.info("End Send Re-registraton Email Notification")
 
     @api.one
@@ -403,7 +401,7 @@ class rdm_customer(models.Model):
                                                 "subject": email.subject,
                                                 "body_html": email.body_html,
                                                 "email_recipients": email.email_recipients})
-        email_obj.send_mail( template_ids, ids[0], True)
+        email_obj.send_mail( template_ids, self.id, True)
         
         _logger.info("End Send Request Reset Password Notification")
 
@@ -421,76 +419,76 @@ class rdm_customer(models.Model):
                                                 "subject": email.subject,
                                                 "body_html": email.body_html,
                                                 "email_recipients": email.email_recipients})
-        email_obj.send_mail( template_ids, ids[0], True)
+        email_obj.send_mail( template_ids, self.id, True)
         _logger.info("Start End Reset Password Notification")
         
         
                         
-        type = fields.Many2one("rdm.customer.type","Type"),        
-        contact_type = fields.Selection(CONTACT_TYPES,"Contact Type",size=16, default="customer"),            
-        old_ayc_number = fields.Char("Old AYC #", size=50),
-        ayc_number = fields.Char("AYC #", size=50, required=True),        
-        name = fields.Char("Name", size=200, required=True),
-        title = fields.Many2one("rdm.tenant.title","Title"),        
-        birth_place = fields.Char("Birth Place", size=100),
-        birth_date = fields.Date("Birth Date", required=True),
-        gender = fields.Many2one("rdm.customer.gender","Gender", required=True),
-        ethnic = fields.Many2one("rdm.customer.ethnic","Ethnic"),
-        religion = fields.Many2one("rdm.customer.religion","Religion"),
-        marital = fields.Many2one("rdm.customer.marital","Marital"),
-        social_id = fields.Char("ID or Passport", size=50, required=True),
-        address = fields.Text("Address"),
-        province = fields.Many2one("rdm.province","Province"),
-        city = fields.Many2one("rdm.city","City"),
-        zipcode = fields.Char("Zipcode", size=10),
-        phone1 = fields.Char("Phone 1", size=20),
-        phone2 = fields.Char("Phone 2", size=20),
-        mobile_phone1 = fields.Char("Mobile Phone 1", size=20, required=True),
-        mobile_phone2 = fields.Char("Mobile Phone 2", size=20),                
-        email = fields.Char("Email",size=100),
-        email_required = fields.Boolean("Email Required", default=True),
-        password = fields.Char("Password",size=20),
-        request_change_password = fields.Boolean("Request Change Password", default=False),
-        request_change_password_passcode = fields.Char("Passcode", size=50),
-        request_change_password_expired = fields.Datetime("Passcode Expired Time"),
-        request_change_password_times = fields.Integer("Request Change Passwosrd Times", default=0),
-        zone = fields.Many2one("rdm.customer.zone","Residential Zone", default=29),
-        occupation = fields.Many2one("rdm.customer.occupation","Occupation"),
-        education = fields.Many2one("rdm.customer.education", "Education"),
-        card_type = fields.Many2one("rdm.card.type", "Card Type",),
-        interest = fields.Many2one("rdm.customer.interest","Interest"),
-        ref_id = fields.Many2one("rdm.customer","Refferal"),
-        receive_email = fields.Boolean("Receive Email"),        
-        join_date = fields.Date("Join Date", default=fields.Datetime().now()),           
-        re_registation = fields.Boolean("Re-registration", default=False),
-        re_registration = fields.Boolean("Re-registration", readonly=True),              
-        state = fields.Selection(AVAILABLE_STATES, "Status", size=16, readonly=True, default="draft"),
-        deleted = fields.Boolean("Deleted",readonly=True, default=False),
-        create_uid = fields.Many2one("res.users","Created By", readonly=True),
-        create_date = fields.Datetime("Date Created", readonly=True),
-        write_uid = fields.Many2one("res.users","Modified By", readonly=True),
-        write_date = fields.Datetime("Date Modified", readonly=True)
+    type = fields.Many2one("rdm.customer.type","Type")
+    contact_type = fields.Selection(CONTACT_TYPES,"Contact Type",size=16, default="customer")
+    old_ayc_number = fields.Char("Old AYC #", size=50)
+    ayc_number = fields.Char("AYC #", size=50, required=True)
+    name = fields.Char("Name", size=200, required=True)
+    title = fields.Many2one("rdm.tenant.title","Title")
+    birth_place = fields.Char("Birth Place", size=100)
+    birth_date = fields.Date("Birth Date", required=True)
+    gender = fields.Many2one("rdm.customer.gender","Gender", required=True)
+    ethnic = fields.Many2one("rdm.customer.ethnic","Ethnic")
+    religion = fields.Many2one("rdm.customer.religion","Religion")
+    marital = fields.Many2one("rdm.customer.marital","Marital")
+    social_id = fields.Char("ID or Passport", size=50, required=True)
+    address = fields.Text("Address")
+    province = fields.Many2one("rdm.province","Province")
+    city = fields.Many2one("rdm.city","City")
+    zipcode = fields.Char("Zipcode", size=10)
+    phone1 = fields.Char("Phone 1", size=20)
+    phone2 = fields.Char("Phone 2", size=20)
+    mobile_phone1 = fields.Char("Mobile Phone 1", size=20, required=True)
+    mobile_phone2 = fields.Char("Mobile Phone 2", size=20)
+    email = fields.Char("Email",size=100)
+    email_required = fields.Boolean("Email Required", default=True)
+    password = fields.Char("Password",size=20)
+    request_change_password = fields.Boolean("Request Change Password", default=False)
+    request_change_password_passcode = fields.Char("Passcode", size=50)
+    request_change_password_expired = fields.Datetime("Passcode Expired Time")
+    request_change_password_times = fields.Integer("Request Change Passwosrd Times", default=0)
+    zone = fields.Many2one("rdm.customer.zone","Residential Zone", default=29)
+    occupation = fields.Many2one("rdm.customer.occupation","Occupation")
+    education = fields.Many2one("rdm.customer.education", "Education")
+    card_type = fields.Many2one("rdm.card.type", "Card Type",)
+    interest = fields.Many2one("rdm.customer.interest","Interest")
+    ref_id = fields.Many2one("rdm.customer","Refferal")
+    receive_email = fields.Boolean("Receive Email")
+    join_date = fields.Date("Join Date", default=fields.Datetime().now())
+    re_registation = fields.Boolean("Re-registration", default=False)
+    re_registration = fields.Boolean("Re-registration", readonly=True)
+    state = fields.Selection(AVAILABLE_STATES, "Status", size=16, readonly=True, default="draft")
+    deleted = fields.Boolean("Deleted",readonly=True, default=False)
+    create_uid = fields.Many2one("res.users","Created By", readonly=True)
+    create_date = fields.Datetime("Date Created", readonly=True)
+    write_uid = fields.Many2one("res.users","Modified By", readonly=True)
+    write_date = fields.Datetime("Date Modified", readonly=True)
 
     @api.model
     def create(self):
-        
-        if "email_required" in values.keys() and "receive_email" in values.keys():            
-            if self.email_required and self.receive_email:            
+        values = {}
+        if "email_required" in self.keys() and "receive_email" in self.keys():
+            if self.email_required and self.receive_email:
                 values.update({"re_registration": True})
             
         #Upper Case Name
-        if "name" in values.keys():
+        if "name" in self.keys():
             name = self.name
             values.update({"name":name.upper()})
         
-        if values["contact_type"] == "tenant":
-            if "tenant_id" in values.keys():                        
-                tenant_id = values["tenant_id"]
+        if self.contact_type == "tenant":
+            if "tenant_id" in self.keys():
+                tenant_id = self.tenant_id
                 if tenant_id:
                     values.update({"contact_type": "tenant"})
         
         #Lower Case Email    
-        if "email" in values.keys():
+        if "email" in self.keys():
             email = self.email
             if email:
                 values.update({"email":email.lower()})
@@ -504,10 +502,10 @@ class rdm_customer(models.Model):
                 elif mobile_phone1[0] == "0":
                     mobile_phone1 = "62" + mobile_phone1[1:len(mobile_phone1)-1]                
                 else:                
-                    raise osv.except_osv(("Warning"), ("Mobile Phone 1 format should be start with +62 or 0"))       
+                    raise ValidationError(("Warning"), ("Mobile Phone 1 format should be start with +62 or 0"))       
 
         #Mobile Phone 1        
-        if "mobile_phone2" in values.keys():            
+        if "mobile_phone2" in self.keys():
             mobile_phone2 = self.mobile_phone2
             if mobile_phone2:
                 if mobile_phone2[0:2] == "62":
@@ -515,19 +513,20 @@ class rdm_customer(models.Model):
                 elif mobile_phone2[0] == "0":
                     mobile_phone2 = "62" + mobile_phone2[1:len(mobile_phone2)-1]                
                 else:                
-                    raise osv.except_osv(("Warning"), ("Mobile Phone 2 format should be start with +62 or 0"))       
+                    raise ValidationError(("Warning"), ("Mobile Phone 2 format should be start with +62 or 0"))       
         
-        #Generate Password        
-        values.update({"password":self._password_generator()})
+        #Generate Password
+
+        values.update({"password": self._password_generator()})
         
         #Checks Duplicate Customer
         is_duplicate, message = self._check_duplicate()
 
         if is_duplicate:
-            raise osv.except_osv(("Warning"), (message))
+            raise ValidationError(("Warning"), (message))
         else:                           
             #Create Customer         
-            id =  super(rdm_customer, self).create( values)
+            id =  super(rdm_customer, self).create(values)
                 
             #Enable Customer
             self.set_enable()
@@ -545,10 +544,11 @@ class rdm_customer(models.Model):
 
     @api.model
     def write(self):
-        trans_id = ids[0]
+        trans_id = self.id
         trans = self.get_trans()
-                
-        if "state" in values.keys():
+        values = {}
+
+        if "state" in self.keys():
             state = self.state
             #Request Change Password
             if state == "request_change_password":
@@ -580,7 +580,7 @@ class rdm_customer(models.Model):
                     mobile_phone1 = "62" + mobile_phone1[1:len(mobile_phone1)-1]
                     values.update({"mobile_phone1":mobile_phone1})                
                 else:                
-                    raise osv.except_osv(("Warning"), ("Mobile Phone 1 format should be start with +62 or 0"))       
+                    raise ValidationError(("Warning"), ("Mobile Phone 1 format should be start with +62 or 0"))       
 
         #Mobile Phone 1        
         if "mobile_phone2" in values.keys():            
@@ -592,13 +592,13 @@ class rdm_customer(models.Model):
                     mobile_phone2 = "62" + mobile_phone2[1:len(mobile_phone2)-1]
                     values.update({"mobile_phone2":mobile_phone2})                
                 else:                
-                    raise osv.except_osv(("Warning"), ("Mobile Phone 2 format should be start with +62 or 0"))       
+                    raise ValidationError(("Warning"), ("Mobile Phone 2 format should be start with +62 or 0"))       
         
-        values.update({"customer_id": ids[0]})
+        values.update({"customer_id": self.id})
         is_duplicate, message = self._check_duplicate(values)
 
         if is_duplicate:
-            raise osv.except_osv(("Warning"), (message))
+            raise ValidationError(("Warning"), (message))
         else:
             return super(rdm_customer,self).write(values)
 

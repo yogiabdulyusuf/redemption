@@ -6,10 +6,9 @@
     "depends" : ["base_setup","base","jakc_redemption"],
     "init_xml" : [],
     "data" : [	
-        "view/jakc_redemption_customer_view.xml",        
-        "view/jakc_redemption_customer_menu.xml",       
-        "view/jakc_redemption_customer_config_view.xml",        
-        "view/jakc_redemption_customer_config_menu.xml",           
+        "view/jakc_redemption_customer_view.xml",
+        "view/jakc_redemption_customer_config_view.xml",
+        "view/jakc_redemption_customer_menu.xml",
     ],
     "installable": True,
     "auto_install": False,
