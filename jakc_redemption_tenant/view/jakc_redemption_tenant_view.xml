@@ -1,4 +1,4 @@
-<openerp>
+<odoo>
     <data>
         <!-- RDM/TENANT-->		
         <record model="ir.ui.view" id="view_rdm_tenant_form">
@@ -6,7 +6,7 @@
             <field name="model">rdm.tenant</field>						
             <field name="type">form</field>						
             <field name="arch" type="xml">
-                <form string="Tenant" version="7.0">
+                <form string="Tenant">
                     <header>
 						<button name="trans_disable" String="Disable" type="object" class="oe_highlight" states="active" groups="base.group_rdm_manager"/>
 						<button name="trans_enable" String="Enable" type="object" class="oe_highlight" states="disable" groups="base.group_rdm_manager"/>
@@ -149,4 +149,4 @@
     	</record>    	
     	    	
     </data>
-</openerp>
+</odoo>

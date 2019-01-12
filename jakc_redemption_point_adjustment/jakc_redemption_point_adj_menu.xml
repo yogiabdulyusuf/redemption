@@ -1,5 +1,0 @@
-<openerp>
-    <data>
-        <menuitem id="rdm_point_adj_menu" name="Adjustment" parent="base.rdm_point_menu"  action="action_rdm_point_adj" sequence="3"/>
-    </data>
-</openerp>

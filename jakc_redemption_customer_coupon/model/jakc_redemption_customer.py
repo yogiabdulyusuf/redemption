@@ -9,7 +9,7 @@ _logger = logging.getLogger(__name__)
 class rdm_customer(models.Model):    
     _inherit = "rdm.customer"
         
-    def get_coupons(self, cr, uid, ids, field_name, args, context=None):
+    def get_coupons(self):
         id = ids[0]
         res = {} 
         sql_req= "SELECT sum(c.coupon) as total FROM rdm_customer_coupon c WHERE (c.customer_id=" + str(id) + ") AND state='active' AND expired_date >= now()"

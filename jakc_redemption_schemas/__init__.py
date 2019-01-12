@@ -1,1 +1,1 @@
-import jakc_redemption_schemas
+import model

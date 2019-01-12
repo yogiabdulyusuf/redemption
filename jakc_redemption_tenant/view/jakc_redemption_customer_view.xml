@@ -1,5 +1,5 @@
-<?xml version="1.0"?>
-<openerp>
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
     <data>
         <record id="view_rdm_tenant_form_inherit_rdm_customer" model="ir.ui.view">
             <field name="name">rdm.tenant.form.inherit.rdm.customer</field>
@@ -13,4 +13,4 @@
             </field>
         </record>
     </data>
-</openerp>
+</odoo>

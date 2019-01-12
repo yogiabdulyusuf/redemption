@@ -1,2 +1,1 @@
-import jakc_redemption_draw
-import jakc_redemption_schemas
+import model

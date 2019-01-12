@@ -1,2 +1,1 @@
-import jakc_redemption_point_adj
-import jakc_redemption_customer_point
+import model
