@@ -10,7 +10,6 @@
         "view/jakc_redemption_reward_menu.xml",
         "view/jakc_redemption_customer_view.xml",
         "view/jakc_redemption_reward_config_view.xml",
-        "view/jakc_redemption_reward_config_menu.xml",
         "view/jakc_redemption_reward_scheduler.xml",
     ],
     "installable": True,

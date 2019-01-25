@@ -7,7 +7,6 @@
     "init_xml" : [],
     "data" : [
         "view/jakc_redemption_customer_point_view.xml",
-        "view/jakc_redemption_customer_point_scheduler.xml",
         "view/jakc_redemption_customer_view.xml",
     ],
     "installable": True,

@@ -7,7 +7,6 @@
     "init_xml" : [],
     "data" : [
         "view/jakc_redemption_customer_coupon_view.xml",
-        "view/jakc_redemption_customer_coupon_scheduler.xml",
         "view/jakc_redemption_customer_view.xml",
     ],
     "installable": True,

@@ -52,15 +52,16 @@ class rdm_tenant(models.Model):
     location =  fields.Char("Location", size=10)
     floor =  fields.Char("Floor", size=10)
     number =  fields.Char("Number", size=10)
-    start_Date =  fields.Date("Join Date", required=True)
-    end_Date =  fields.Date("End Date")
+    start_date =  fields.Date("Join Date", required=True)
+    end_date =  fields.Date("End Date")
     customer_ids =  fields.One2many("rdm.customer","tenant_id","Contacts")
     message_ids =  fields.One2many("rdm.tenant.message","tenant_id","Messages")
-    state =  fields.Selection(AVAILABLE_STATES,"Status",size=16,readonly=True, default=draft)
-    
+    state =  fields.Selection(AVAILABLE_STATES,"Status",size=16,readonly=True, default="draft")
+
+    @api.model
     def create(self):
         values = {}
-        values.upDate({"state" : "active"})
+        values.update({"state" : "active"})
         trans_id = super(rdm_tenant,self).create(values)
         return trans_id
 
@@ -68,7 +69,7 @@ class rdm_tenant_message(models.Model):
     _name = "rdm.tenant.message"
     _description = "Redemption Tenant Message"
  
-    trans_Date =  fields.Date("Date", required=True, default=fields.Datetime.now)
+    trans_date =  fields.Date("Date", required=True, default=fields.Datetime.now)
     tenant_id =  fields.Many2one("rdm.tenant","Tenant",required=True)
     customer_id =  fields.Many2one("rdm.customer","Contact",required=True)
     message_category_id =  fields.Many2one("rdm.tenant.message.category","Category",size=50,required=True)                     

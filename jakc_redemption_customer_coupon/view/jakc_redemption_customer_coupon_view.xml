@@ -84,20 +84,20 @@
             </field>
         </record>           
                                 
-		<!-- RDM/SEQUENCE -->
-        <!-- COUPON CODE -->       
-        <record id="sequence_type_rdm_customer_coupon" model="ir.sequence.type">
-            <field name="name">Customer Coupon</field>
-            <field name="code">rdm.customer.coupon.sequence</field>
-        </record>
-        
-        <record id="sequence_rdm_customer_coupon" model="ir.sequence">
-            <field name="name">Customer Coupon</field>
-            <field name="code">rdm.customer.coupon.sequence</field>
-            <field name="padding" eval="10"/>
-            <field name="number_increment">1</field>            
-        </record>        
-                		                
+		<!--&lt;!&ndash; RDM/SEQUENCE &ndash;&gt;-->
+        <!--&lt;!&ndash; COUPON CODE &ndash;&gt;       -->
+        <!--<record id="sequence_type_rdm_customer_coupon" model="ir.sequence.type">-->
+            <!--<field name="name">Customer Coupon</field>-->
+            <!--<field name="code">rdm.customer.coupon.sequence</field>-->
+        <!--</record>-->
+        <!---->
+        <!--<record id="sequence_rdm_customer_coupon" model="ir.sequence">-->
+            <!--<field name="name">Customer Coupon</field>-->
+            <!--<field name="code">rdm.customer.coupon.sequence</field>-->
+            <!--<field name="padding" eval="10"/>-->
+            <!--<field name="number_increment">1</field>            -->
+        <!--</record>        -->
+                		                <!---->
         <!-- RDM/ACTION -->
         <!-- CUSTOMER COUPON -->
 		<record model="ir.actions.act_window" id="action_rdm_customer_coupon">
@@ -105,15 +105,13 @@
             <field name="res_model">rdm.customer.coupon</field>
             <field name="view_mode">tree,form</field>
         </record>
-        		
+
 	    <!-- CUSTOMER COUPON DETAIL -->
 		<record model="ir.actions.act_window" id="action_rdm_customer_coupon_detail">
             <field name="name">Customer Coupon Detail</field>
             <field name="res_model">rdm.customer.coupon.detail</field>
             <field name="view_mode">tree,form</field>
         </record>
-        <!-- MENU -->
-        <menuitem id="rdm_customer_coupon_detail_menu" name="Coupon Detail" parent="base.rdm_promo_menu" groups="base.group_rdm_manager" action="action_rdm_customer_coupon_detail" sequence="2"/>             
           
     </data>
 </odoo>

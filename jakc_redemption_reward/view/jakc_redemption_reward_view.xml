@@ -6,7 +6,7 @@
             <field name="model">rdm.reward</field>						
             <field name="type">form</field>						
             <field name="arch" type="xml">
-                <form string="Reward"">
+                <form string="Reward">
 					<header>
                         <button name="trans_close" string="Close" type="object" class="oe_highlight" states="draft" confirm="Are you sure to close this transaction?"/>
                         <button name="trans_re_open" string="Re-open" type="object" class="oe_highlight" states="done"/>                                                                      
@@ -19,9 +19,9 @@
 			                    <field name="point"/>
                                 <field name="coupon_number" attrs="{'invisible':[('type','!=','coupon')],'required':[('type','==','coupon')]}"/>
 			                    <field name="limit_count"/>             
-			                    <field name="stock"/>
-			                    <field name="booking"/>			                    		                   
-			                    <field name="usage"/>			                    			                                                			                                             
+			                    <!--<field name="stock"/>-->
+			                    <!--<field name="booking"/>			                    		                   -->
+			                    <!--<field name="usage"/>			                    			                                                			                                             -->
 			                    <field name="state"/>	                                                   		                    															
 							</group>                    
 							<group>
@@ -116,7 +116,7 @@
             <field name="model">rdm.reward.goods</field>						
             <field name="type">form</field>						
             <field name="arch" type="xml">
-                <form string="Goods"">
+                <form string="Goods">
                 	<sheet>
 						<group colspan="2">							
 			            	<field name="trans_date"/>
@@ -132,7 +132,7 @@
             <field name="model">rdm.reward.coupon</field>						
             <field name="type">form</field>						
             <field name="arch" type="xml">
-                <form string="Coupon"">
+                <form string="Coupon">
                 	<sheet>
 						<group colspan="2">							
 			            	<field name="trans_date"/>
@@ -148,7 +148,7 @@
             <field name="model">rdm.reward.voucher</field>						
             <field name="type">form</field>						
             <field name="arch" type="xml">
-                <form string="Voucher"">
+                <form string="Voucher">
                 	<sheet>
 						<group colspan="2">							
 			            	<field name="trans_date"/>
@@ -165,7 +165,7 @@
             <field name="model">rdm.reward.trans</field>						
             <field name="type">form</field>						
             <field name="arch" type="xml">
-                <form string="Reward Transaction"">
+                <form string="Reward Transaction">
 					<header>
                         <button name="trans_close" string="Close" type="object" class="oe_highlight" states="open" confirm="Are you sure to close this transaction?"/>
 					    <button name="trans_print" string="Print" type="object" class="oe_highlight" states="done" confirm="Are you sure to print this transaction?"/>
@@ -211,7 +211,7 @@
                 <tree string="Reward Transaction">
 					<field name="trans_date"/>                	
                     <field name="customer_id"/>
-                    <field name="reward_id"/>                            
+                    <field name="reward_id"/>
                     <field name="point"/>                            		
                     <field name="remarks"/>
                     <field name="is_booking"/>

@@ -5,8 +5,7 @@ _logger = logging.getLogger(__name__)
 
 
 class rdm_trans_config_settings(models.Model):
-    _name = 'rdm.trans.config.settings'
-    _inherit = 'res.config.settings'
+    _inherit = "res.company"
 
     trans_delete_allowed = fields.Boolean('Allow Delete Transaction')
     trans_delete_approver = fields.Many2one('hr.employee','Delete Transaction Approver')

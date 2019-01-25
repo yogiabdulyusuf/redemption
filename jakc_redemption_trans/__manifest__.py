@@ -12,7 +12,6 @@
         "view/jakc_redemption_reward_view.xml",
         "view/jakc_redemption_customer_coupon_view.xml",
         "view/jakc_redemption_trans_config_view.xml",
-        "view/jakc_redemption_trans_config_menu.xml",
     ],
     "installable": True,
     "auto_install": False,

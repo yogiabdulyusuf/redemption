@@ -3,8 +3,7 @@
         <!-- RDM/CUSTOMER-->		
         <record model="ir.ui.view" id="view_rdm_customer_form">
             <field name="name">rdm.customer.form</field>
-            <field name="model">rdm.customer</field>						
-            <field name="type">form</field>						
+            <field name="model">rdm.customer</field>
             <field name="arch" type="xml">
                 <form string="Customer">
 					<header>                        
@@ -14,7 +13,8 @@
 						<button name="set_enable" string="Enable" type="object" class="oe_highlight" states='disable'/>
 						<button name="re_registration" string="Re-registration" type="object" class="oe_highlight"  states='active'/>
 						<button name="change_password" string="Change Password" type="object" class="oe_highlight" states='active'/>
-						<button name="reset_password" string="Reset Password" type="object" class="oe_highlight" states='active'/>	                                                                                                         
+						<button name="reset_password" string="Reset Password" type="object" class="oe_highlight" states='active'/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,active,blacklist,disable"/>
                     </header>	                	
 					<sheet>
 	                    <group colspan="4">                            
@@ -25,7 +25,7 @@
 	                        <field name="ayc_number"/>
 	                        <field name="card_type"/>
 	                        <field name="social_id"/>
-	                        <field name="state"/>
+	                        <!-- <field name="state"/> -->
 	                        <field name="contact_type"/>       
 							<field name="create_uid"/>
 	                        <field name="create_date"/>

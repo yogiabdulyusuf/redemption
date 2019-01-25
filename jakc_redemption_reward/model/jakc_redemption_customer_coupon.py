@@ -1,9 +1,7 @@
-from openerp.osv import fields, osv
+from odoo import api, fields, models
 
-class rdm_customer_coupon(osv.osv):
+class rdm_customer_coupon(models.Model):
     _name = "rdm.customer.coupon"
     _inherit = "rdm.customer.coupon"
-    _columns = {
-        'reward_trans_id': fields.many2one('rdm.reward.trans','Reward Transaction ID',readonly=True),        
-    }
-rdm_customer_coupon()
+
+    reward_trans_id = fields.Many2one(comodel_name="rdm.reward.trans", string="Reward Transaction ID", required=True, )

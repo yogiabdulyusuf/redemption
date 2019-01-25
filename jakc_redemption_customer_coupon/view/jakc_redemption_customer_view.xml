@@ -7,9 +7,9 @@
             <field name="type">form</field>
             <field name="inherit_id" ref="jakc_redemption_customer.view_rdm_customer_form"/>					
             <field name="arch" type="xml">
-				<field name="social_id" position="after">
-					<field name="coupon"/>
-				</field>            	
+				<!--<field name="social_id" position="after">-->
+					<!--<field name="coupon"/>-->
+				<!--</field>            	-->
                 <notebook position="inside">
                     <page string="Coupons">                    	
                         <field name="customer_coupon_ids" widget="one2many_list" nolabel="1" domain="[('state','=','active'])]">
@@ -21,8 +21,12 @@
                             </tree>                    
                         </field>
                     </page>
-                </notebook>			
+                </notebook>
+
             </field>
         </record>
+
+        <menuitem id="rdm_customer_coupon_detail_menu" name="Coupon Detail" parent="base.rdm_promo_menu" action="action_rdm_customer_coupon_detail" sequence="2"/>
+
     </data>
 </odoo>
