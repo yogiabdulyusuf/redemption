@@ -25,39 +25,32 @@ CONTACT_TYPES = [
 ]
 
 
-# class rdm_customer_change_password(models.Model):
-# #     _name = "rdm.customer.change.password"
-# #     _description = "Redemption Customer Change Password"
-# #
-# #     def change_password(self):
-# #
-# #         customer_id = self.customer_id
-# #         data = {}
-# #         if self.password_new == self.password_confirm:
-# #             data.update({"password":self.password_new})
-# #             self.env("rdm.customer").write( [customer_id], data)
-# #         return True
-# #
-# #
-# #     password_new = fields.Char("New Password", ),
-# #     password_confirm = fields.Text("Confirm Password", )
+class rdm_customer_change_password(models.Model):
+    _name = "rdm.customer.change.password"
+    _description = "Redemption Customer Change Password"
+
+    def change_password(self, vals):
+        customer_id = self.customer_id
+        if vals['password_new'] == vals['password_confirm']:
+            vals.update({"password": self.password_new})
+            self.env["rdm.customer"].write(1,customer_id,vals)
+        return True
+
+    password_new = fields.Char("New Password", )
+    password_confirm = fields.Text("Confirm Password", )
 
 
 class rdm_customer(models.Model):
     _name = "rdm.customer"
     _description = "Redemption Customer"
 
-    # @api.one
-    # def set_black_list(self):
-    #     _logger.info("Blacklist ID : " + str(self.id))
-    #     self.write({"state": "blacklist"})
-    #     return True
-    #
-    # @api.one
-    # def set_remove_black_list(self):
-    #     _logger.info("Reset Blacklist ID : " + str(self.id))
-    #     self.write({"state": "active"})
-    #     return True
+    @api.one
+    def set_black_list(self):
+        self.state = "blacklist"
+
+    @api.one
+    def set_remove_black_list(self):
+        self.state = "active"
 
     @api.one
     def set_disable(self):
@@ -73,18 +66,19 @@ class rdm_customer(models.Model):
     # def get_trans(self):
     #     return self.browse(self.trans_id);
     #
-    # @api.one
-    # def change_password(self):
-    #     return {
-    #            "type": "ir.actions.act_window",
-    #            "name": "Change Password",
-    #            "view_mode": "form",
-    #            "view_type": "form",
-    #            "res_model": "rdm.customer.change.password",
-    #            "nodestroy": True,
-    #            "target":"new",
-    #            "context": {"customer_id": self.id},
-    #     }
+    @api.multi
+    def change_password(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Change Password',
+            'res_model': 'rdm.customer.change.password',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'view_id': self.env.ref('view_rdm_customer_change_password_form', False),
+            'target': 'new',
+            # "nodestroy": True,
+            # "context": {"customer_id": self.id},
+        }
     #
     # @api.one
     # def _request_forget_password(self):

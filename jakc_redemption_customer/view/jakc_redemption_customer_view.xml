@@ -110,25 +110,25 @@
             </field>
         </record>  		
               
-		<!-- CHANGE PASSWORD POPUP WINDOW
+		<!-- CHANGE PASSWORD POPUP WINDOW -->
         <record model="ir.ui.view" id="view_rdm_customer_change_password_form">
             <field name="name">rdm.customer.change.password.fom</field>
             <field name="model">rdm.customer.change.password</field>
             <field name="arch" type="xml">
                 <form string="Redemption Customer Change Password">
-                    <group>                                                                            
+                    <group>
                         <field name="password_new"/>
-                        <field name="password_confirm"/>   
-                    </group>                    
+                        <field name="password_confirm"/>
+                    </group>
                     <footer>
-                        <button name="change_password" string="Change Password" type="object" class="oe_highlight"/>    
-                        or                   
-                        <button string="Cancel" class="oe_link" special="cancel"/>                    
-                    </footer>                    
+                        <button name="change_password" string="Change Password" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
                 </form>
             </field>
-        </record>	          
-         -->
+        </record>
+
         <!-- RDM/ACTION -->
         <!-- CUSTOMER -->
         <record model="ir.ui.view" id="view_rdm_customer_filter">
